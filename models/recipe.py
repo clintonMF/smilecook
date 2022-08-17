@@ -1,4 +1,5 @@
 recipe_list = []
+# the recipe list is used to store data in the system memory
 
 def get_last_id():
     if recipe_list:
