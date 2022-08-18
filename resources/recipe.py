@@ -7,11 +7,13 @@ from models.recipe import Recipe, recipe_list
 class RecipeListResource(Resource):
     
     def get(self):
-        data = []
-        for recipe in recipe_list:
-            if recipe.is_publish ==True:
-                data.append(recipe.data)
-                
+        data = [recipe.data for recipe in recipe_list if recipe.is_publish ==True]
+        # data = []
+        # for recipe in recipe_list:
+        #     if recipe.is_publish ==True:
+        #         data.append(recipe.data)
+        # print(data_1)
+        # print(data)
         return {"data": data}, HTTPStatus.OK
     
     def post(self):
