@@ -11,7 +11,7 @@ def get_last_id():
     return last_recipe.id + 1
 
 
-class Recipe():
+class Recipe(db.Model):
     __tablename__ = 'recipe'
     
     id = db.Column(db.Integer, primary_key=True)
