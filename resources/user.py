@@ -63,4 +63,19 @@ class UserResource(Resource):
             }
         
         return data, HTTPStatus.OK
-            
+
+class MeResource(Resource):
+    
+    @jwt_required()
+    def get(self):
+        current_user = get_jwt_identity()
+        user = User.get_by_id(id=current_user)
+        
+        print(user)
+        data = {
+            "id": user.id,
+            "email": user.email,
+            "username": user.username
+        }
+        
+        return data, HTTPStatus.OK
