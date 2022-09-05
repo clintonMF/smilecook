@@ -71,7 +71,6 @@ class MeResource(Resource):
         current_user = get_jwt_identity()
         user = User.get_by_id(id=current_user)
         
-        print(user)
         data = {
             "id": user.id,
             "email": user.email,

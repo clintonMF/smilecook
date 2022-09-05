@@ -8,7 +8,7 @@ from models.user import User
 from resources.recipe import RecipeListResource, RecipeResource
 # from resources.recipe import RecipePublishResource
 from resources.user import UserListResource, UserResource, MeResource
-from resources.token import TokenResource
+from resources.token import TokenResource, RefreshResource
 
 def create_app():
     app = Flask(__name__)
@@ -35,6 +35,7 @@ def register_resources(app):
     api.add_resource(UserResource, '/users/<string:username>')
     api.add_resource(TokenResource, '/token')
     api.add_resource(MeResource, '/me')
+    api.add_resource(RefreshResource, "/refresh")
 
 
 if __name__=='__main__':
