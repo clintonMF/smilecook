@@ -61,4 +61,6 @@ class UserResource(Resource):
                 "email": user.email,
                 "username": username
             }
+        
+        return data, HTTPStatus.OK
             
