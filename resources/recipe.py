@@ -39,7 +39,7 @@ class RecipeResource(Resource):
             return {"message": "recipe not found"}, HTTPStatus.NOT_FOUND
         
         current_user = get_jwt_identity()
-        
+
         if current_user != recipe.user_id or recipe.is_publish == False:
             return {"message": "Access not allowed"}, HTTPStatus.UNAUTHORIZED
         
@@ -65,6 +65,7 @@ class RecipeResource(Resource):
         recipe.cook_time = data['cook_time']
         recipe.directions = data['directions']
         
+        recipe.save()
         return recipe.data(), HTTPStatus.OK
     
     @jwt_required()
@@ -83,27 +84,38 @@ class RecipeResource(Resource):
         return {}, HTTPStatus.NO_CONTENT
         
     
-# class RecipePublishResource(Resource):
+class RecipePublishResource(Resource):
     
-#     def put(self, recipe_id):
-#         recipe = next((recipe for recipe in recipe_list if 
-#                        recipe.id == recipe_id ), None)
-#         if recipe is None:
-#             return {"message": "recipe not found"}, HTTPStatus.NOT_FOUND
+    @jwt_required()
+    def put(self, recipe_id):
+        recipe = Recipe.get_by_id(recipe_id)
+        if recipe is None:
+            return {"message": "recipe not found"}, HTTPStatus.NOT_FOUND
         
-#         recipe.is_publish = True
+        current_user = get_jwt_identity()
         
-#         return {}, HTTPStatus.NO_CONTENT
+        if current_user != recipe.user_id:
+            return {"message": "Access not allowed"}, HTTPStatus.UNAUTHORIZED
+        
+        recipe.is_publish = True
+        recipe.save()
+        
+        return {}, HTTPStatus.NO_CONTENT
     
-#     def delete(self, recipe_id):
-#         recipe = next((recipe for recipe in recipe_list if 
-#                        recipe.id == recipe_id ), None)
-#         if recipe is None:
-#             return {"message": "recipe not found"}, HTTPStatus.NOT_FOUND
+    @jwt_required()
+    def delete(self, recipe_id):
+        recipe = Recipe.get_by_id(recipe_id)
+        if recipe is None:
+            return {"message": "recipe not found"}, HTTPStatus.NOT_FOUND
         
-#         recipe.is_publish = False
+        current_user = get_jwt_identity()
         
-#         return {}, HTTPStatus.NO_CONTENT
+        if current_user != recipe.user_id:
+            return {"message": "Access not allowed"}, HTTPStatus.UNAUTHORIZED
+        
+        recipe.is_publish = False
+        recipe.save()
+        return {}, HTTPStatus.NO_CONTENT
     
         
         
