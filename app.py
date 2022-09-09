@@ -7,8 +7,10 @@ from extensions import db, jwt
 from models.user import User
 from resources.recipe import RecipeListResource, RecipeResource
 from resources.recipe import RecipePublishResource
-from resources.user import UserListResource, UserResource, MeResource
-from resources.token import TokenResource, RefreshResource, RevokeResource, blacklist
+from resources.user import (
+    UserListResource, UserResource, MeResource, UserRecipeListResource)
+from resources.token import (
+    TokenResource, RefreshResource, RevokeResource, blacklist)
 
 def create_app():
     app = Flask(__name__)
@@ -43,6 +45,7 @@ def register_resources(app):
     api.add_resource(MeResource, '/me')
     api.add_resource(RefreshResource, "/refresh")
     api.add_resource(RevokeResource, "/revoke")
+    api.add_resource(UserRecipeListResource, "/users/<string:username>/recipes")
 
 
 if __name__=='__main__':
