@@ -2,6 +2,7 @@ from flask import request
 from flask_restful import Resource
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from http import HTTPStatus
+from marshmallow import ValidationError
 
 from schema.user import UserSchema
 
@@ -16,12 +17,12 @@ class UserListResource(Resource):
     def post(self):
         json_data = request.get_json()
         
-        data, errors = user_schema.load(data=json_data)
-        
-        if errors:
+        try:
+            data = user_schema.load(json_data)
+        except ValidationError as err:
             return {
                 "message": "Validation error",
-                "errors": errors,
+                "errors": err.messages
                 }, HTTPStatus.BAD_REQUEST
         
         

@@ -16,17 +16,6 @@ class Recipe(db.Model):
     updated_at = db.Column(db.DateTime(), nullable=False, 
                         server_default=db.func.now(), onupdate=db.func.now())
     user_id = db.Column(db.Integer(), db.ForeignKey("user.id"))
-    
-    def data(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "description": self.description,
-            "number of servings": self.num_of_servings,
-            "cook time": self.cook_time,
-            "directions": self.directions,
-            "user id": self.user_id
-        }
         
     @classmethod
     def get_all_published(cls):
