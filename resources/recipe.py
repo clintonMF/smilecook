@@ -52,9 +52,18 @@ class RecipeResource(Resource):
         return recipe.data(), HTTPStatus.OK
     
     @jwt_required()
-    def put(self, recipe_id):
-        data = request.get_json()
+    def patch(self, recipe_id):
+        json_data = request.get_json()
         recipe = Recipe.get_by_id(recipe_id)
+        
+        try:
+            data = recipe_schema.load(
+                json_data, partial=('name','description', 'directions'))
+        except ValidationError as err:
+            return {
+                "messages":"validation error",
+                "errors": err.messages
+                }, HTTPStatus.BAD_REQUEST
         
         if recipe is None:
             return {"message": "recipe not found"}, HTTPStatus.NOT_FOUND
@@ -62,17 +71,16 @@ class RecipeResource(Resource):
         current_user = get_jwt_identity()
         
         if current_user != recipe.user_id:
-            return {"message": "Access not allowed"}, HTTPStatus.UNAUTHORIZED
+            return {"message": "Access not allowed"}, HTTPStatus.FORBIDDEN
         
-        
-        recipe.name = data["name"]
-        recipe.description = data['description']
-        recipe.num_of_servings = data['num_of_servings']
-        recipe.cook_time = data['cook_time']
-        recipe.directions = data['directions']
+        recipe.name = data.get("name") or recipe.name
+        recipe.description = data.get('description') or recipe.description
+        recipe.num_of_servings = data.get('num_of_servings') or recipe.num_of_servings
+        recipe.cook_time = data.get('cook_time') or recipe.cook_time
+        recipe.directions = data.get('directions') or recipe.directions
         
         recipe.save()
-        return recipe.data(), HTTPStatus.OK
+        return recipe_schema.dump(recipe), HTTPStatus.OK
     
     @jwt_required()
     def delete(self, recipe_id):
