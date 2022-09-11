@@ -13,6 +13,7 @@ from schema.recipe import RecipeSchema
 recipe_schema = RecipeSchema()
 recipe_list_schema = RecipeSchema(many=True)
 
+
 class RecipeListResource(Resource):
     
     def get(self):
@@ -52,7 +53,7 @@ class RecipeResource(Resource):
         if current_user != recipe.user_id or recipe.is_publish == False:
             return {"message": "Access not allowed"}, HTTPStatus.UNAUTHORIZED
         
-        return recipe.data(), HTTPStatus.OK
+        return recipe_schema.dump(recipe), HTTPStatus.OK
     
     @jwt_required()
     def patch(self, recipe_id):
