@@ -3,7 +3,10 @@ from marshmallow import (
     )
 from schema.user import UserSchema
 
+# the schema class are used for serialization and deserialization
+
 def validate_number_of_servings(n):
+    """This function validates the number of servings"""
     if n < 1:
         raise ValidationError(
             'Number of servings must be greater than 0')
@@ -12,6 +15,9 @@ def validate_number_of_servings(n):
             'Number of servings cannot be greater than 50')
             
 class RecipeSchema(Schema):
+    """
+    This class is used to define valid data for the Recipe models
+    """
     class Meta: ordered =True
     
     id = fields.Integer(dump_only=True)
@@ -28,6 +34,9 @@ class RecipeSchema(Schema):
     
     @validates('cook_time')
     def validate_cook_time(self, value):
+        # this function validates the cook time 
+        # when validating the cook_time property this function is called 
+        # because of the validates decorator
         if value < 1:
             raise ValidationError("cook time must be greater than 0 minutes")
         if value > 300:

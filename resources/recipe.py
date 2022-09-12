@@ -15,6 +15,10 @@ recipe_list_schema = RecipeSchema(many=True)
 
 
 class RecipeListResource(Resource):
+    """
+    This class holds the logic for the /recipes endpoint
+    """
+    
     
     def get(self):
         recipes = Recipe.get_all_published()
@@ -41,7 +45,9 @@ class RecipeListResource(Resource):
         return recipe_schema.dump(recipe), HTTPStatus.CREATED
     
 class RecipeResource(Resource):
-    
+    """
+    This class holds the logic for the /recipes/<recipe_id endpoint
+    """
     @jwt_required(optional=True)
     def get(self, recipe_id):
         recipe = Recipe.get_by_id(recipe_id)
@@ -103,6 +109,10 @@ class RecipeResource(Resource):
         
     
 class RecipePublishResource(Resource):
+    """
+    This class holds the logic for the "/recipes/<int:recipe_id>/publish"
+    endpoint.
+    """
     
     @jwt_required()
     def put(self, recipe_id):

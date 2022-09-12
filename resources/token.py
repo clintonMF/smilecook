@@ -12,7 +12,9 @@ from models.user import User
 blacklist = set()
 
 class TokenResource(Resource):
-    
+    """
+    This class holds the logic for the "/token" endpoint
+    """
     def post(self):
         data = request.get_json()
         email = data.get('email')
@@ -23,6 +25,7 @@ class TokenResource(Resource):
             return {
                 "message": "email or password is incorrect"
                 }, HTTPStatus.UNAUTHORIZED
+            
         access_token = create_access_token(identity=user.id, fresh=True)
         refresh_token = create_refresh_token(identity=user.id)
         
@@ -32,6 +35,9 @@ class TokenResource(Resource):
             }, HTTPStatus.OK
 
 class RefreshResource(Resource):
+    """
+    This class holds the logic for the "/token" endpoint
+    """
     @jwt_required(refresh=True)
     def post(self):
         current_user = get_jwt_identity()
@@ -39,7 +45,10 @@ class RefreshResource(Resource):
         
         return {"access_token": access_token}, HTTPStatus.OK
     
-class RevokeResource(Resource):
+class RevokeResource(Resource):   
+    """
+    This class holds the logic for the "/revoke" endpoint
+    """
     @jwt_required()
     def post(self):
         jti = get_jwt()['jti']

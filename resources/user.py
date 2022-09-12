@@ -15,12 +15,16 @@ from models.recipe import Recipe
 
 user_schema = UserSchema()
 user_schema_public = UserSchema(exclude=('email',))
+# exclude=('email',) is used to prevent the email details from being passed
 recipe_list_schema = RecipeSchema(many=True)
 
 
 class UserListResource(Resource):
-    
+    """
+    This class holds the logic for the "/users" endpoint
+    """
     def post(self):
+        """This function is used to create a new user"""
         json_data = request.get_json()
         
         try:
@@ -48,9 +52,16 @@ class UserListResource(Resource):
         return user_schema.dump(user), HTTPStatus.CREATED
 
 class UserResource(Resource):
-    
+    """
+    This class holds the logic for the "/users/<string:username>" endpoint
+    """
     @jwt_required(optional=True)
     def get(self, username):
+        """
+        This function is used to get user information
+        The information returned varies by users i.e nore information is given
+        to the actual user, while less is given to others.
+        """
         user = User.get_by_username(username)
         
         if not user:
@@ -67,7 +78,9 @@ class UserResource(Resource):
     
 
 class MeResource(Resource):
-    
+    """
+    This class holds the logic for the "/me" endpoint
+    """
     @jwt_required()
     def get(self):
         current_user = get_jwt_identity()
@@ -77,7 +90,12 @@ class MeResource(Resource):
     
     
 class UserRecipeListResource(Resource):
-    
+    """
+    This class holds the logic for the "/users/<string:username>/recipes" 
+    endpoint
+    """
+    #the @use_kwargs line of code is used to specify that we expect to 
+    # receive query parameter visibility. 
     @jwt_required(optional=True)
     @use_kwargs({'visibility': fields.Str()},  location="query")
     def get(self, username, visibility):
