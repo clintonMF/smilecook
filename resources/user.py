@@ -1,9 +1,12 @@
 import http
-from flask import request
+from flask import request, url_for, render_template
 from flask_restful import Resource
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from http import HTTPStatus
 from marshmallow import ValidationError
+from dotenv import load_dotenv
+import os
+
 
 from webargs import fields
 from webargs.flaskparser import use_kwargs
@@ -12,11 +15,16 @@ from schema.user import UserSchema
 from schema.recipe import RecipeSchema
 from models.user import User
 from models.recipe import Recipe
+from mailgun import MailgunApi
+from utils import generate_token, verify_token
 
 user_schema = UserSchema()
 user_schema_public = UserSchema(exclude=('email',))
 # exclude=('email',) is used to prevent the email details from being passed
 recipe_list_schema = RecipeSchema(many=True)
+load_dotenv()
+
+mailgun = MailgunApi(os.getenv("MAILGUN_DOMAIN"),'MAILGUN_API_KEY')
 
 
 class UserListResource(Resource):
@@ -46,8 +54,14 @@ class UserListResource(Resource):
             return {"message":"this email exists"}, HTTPStatus.BAD_REQUEST
         
         user = User(**data)
-        
         user.save()
+        print(user.email)
+        token = generate_token(user.email, salt='activate')
+        subject = 'Please confirm your registration'
+        link = url_for('useractivateresource',token=token,_external=True)
+        text = "Hi! thanks for using smilecook, please confirm your registration by clicking on the link: {}".format(link)
+        
+        mailgun.send_email(to=user.email, subject=subject, text=text, html=render_template('confirmation.html', link=link))
         
         return user_schema.dump(user), HTTPStatus.CREATED
 
@@ -112,3 +126,29 @@ class UserRecipeListResource(Resource):
         recipe = Recipe.get_all_by_user(user_id=user.id, visibility=visibility)
         
         return recipe_list_schema.dump(recipe), HTTPStatus.OK
+    
+class UserActivateResource(Resource):
+    """This class is used to activate the user account through the email 
+    using the activation link sent in the email"""
+    
+    def get(self, token):
+        print("token", token)
+        email = verify_token(token, salt='activate')
+        print("email", email)
+        
+        if email is False:
+            return {
+                "message": "Invalid token or token expired"
+            }, HTTPStatus.BAD_REQUEST
+        
+        user = User.get_by_email(email=email)
+        print("user:", user)
+        if not user:
+            return {"message": "User not found"}, HTTPStatus.NOT_FOUND
+        if user.is_active:
+            return {"message": "This user account has been activated"}, HTTPStatus.BAD_REQUEST
+        
+        user.is_active = True
+        user.save()
+        
+        return {}, HTTPStatus.NO_CONTENT

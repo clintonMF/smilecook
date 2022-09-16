@@ -25,6 +25,9 @@ class TokenResource(Resource):
             return {
                 "message": "email or password is incorrect"
                 }, HTTPStatus.UNAUTHORIZED
+
+        if user.is_active is False:
+            return {'message': 'The user account is not activated yet'}, HTTPStatus.FORBIDDEN
             
         access_token = create_access_token(identity=user.id, fresh=True)
         refresh_token = create_refresh_token(identity=user.id)
@@ -36,10 +39,15 @@ class TokenResource(Resource):
 
 class RefreshResource(Resource):
     """
-    This class holds the logic for the "/token" endpoint
+    This class holds the logic for the "/refresh" endpoint
     """
     @jwt_required(refresh=True)
     def post(self):
+        """
+        this endpoint uses the refresh token to create a new access token
+        note: this access token is not fresh.
+        """
+        
         current_user = get_jwt_identity()
         access_token = create_access_token(identity=current_user, fresh=False)
         

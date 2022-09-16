@@ -11,12 +11,14 @@ from models.recipe import Recipe
 from schema.recipe import RecipeSchema
 
 recipe_schema = RecipeSchema()
-recipe_list_schema = RecipeSchema(many=True)
+recipe_list_schema = RecipeSchema(many=True) 
+# many = True is used to let the serializer (the @post_dump(pass_many)
+# decorator) know that several objects would be passed.
 
 
 class RecipeListResource(Resource):
     """
-    This class holds the logic for the /recipes endpoint
+    This class holds the logic for the "/recipes" endpoint
     """
     
     
@@ -46,7 +48,7 @@ class RecipeListResource(Resource):
     
 class RecipeResource(Resource):
     """
-    This class holds the logic for the /recipes/<recipe_id endpoint
+    This class holds the logic for the "/recipes/<recipe_id" endpoint
     """
     @jwt_required(optional=True)
     def get(self, recipe_id):
