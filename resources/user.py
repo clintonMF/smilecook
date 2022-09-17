@@ -16,10 +16,12 @@ from schema.recipe import RecipeSchema
 from models.user import User
 from models.recipe import Recipe
 from mailgun import MailgunApi
-from utils import generate_token, verify_token
+from utils import generate_token, verify_token, save_image
+from extensions import image_set
 
 user_schema = UserSchema()
 user_schema_public = UserSchema(exclude=('email',))
+user_schema_avatar = UserSchema(only=('avatar_image',))
 # exclude=('email',) is used to prevent the email details from being passed
 recipe_list_schema = RecipeSchema(many=True)
 load_dotenv()
@@ -61,7 +63,8 @@ class UserListResource(Resource):
         link = url_for('useractivateresource',token=token,_external=True)
         text = "Hi! thanks for using smilecook, please confirm your registration by clicking on the link: {}".format(link)
         
-        mailgun.send_email(to=user.email, subject=subject, text=text, html=render_template('confirmation.html', link=link))
+        mailgun.send_email(to=user.email, subject=subject, text=text,
+                    html=render_template('confirmation.html', link=link))
         
         return user_schema.dump(user), HTTPStatus.CREATED
 
@@ -132,10 +135,7 @@ class UserActivateResource(Resource):
     using the activation link sent in the email"""
     
     def get(self, token):
-        print("token", token)
         email = verify_token(token, salt='activate')
-        print("email", email)
-        
         if email is False:
             return {
                 "message": "Invalid token or token expired"
@@ -146,9 +146,40 @@ class UserActivateResource(Resource):
         if not user:
             return {"message": "User not found"}, HTTPStatus.NOT_FOUND
         if user.is_active:
-            return {"message": "This user account has been activated"}, HTTPStatus.BAD_REQUEST
+            return {
+                "message": "This user account has been activated"
+                }, HTTPStatus.BAD_REQUEST
         
         user.is_active = True
         user.save()
         
         return {}, HTTPStatus.NO_CONTENT
+    
+class UserAvatarUploadResource(Resource):
+    
+    @jwt_required()
+    def put(self):
+        file = request.files.get('avatar')
+        print(file)
+        
+        if not file:
+            return {"message": "Not a valid image"}, HTTPStatus.BAD_REQUEST
+        
+        if not image_set.file_allowed(file, file.filename):
+            return {"message": "file type not allowed"}, HTTPStatus.BAD_REQUEST
+        
+        user = User.get_by_id(get_jwt_identity())
+        
+        if user.avatar_image:
+            print("yes")
+            avatar_path = image_set.path(folder='avatars',
+                                         filename=user.avatar_image)
+            if os.path.exists(avatar_path):
+                os.remove(avatar_path)
+                
+        filename = save_image(file, 'avatars')
+        user.avatar_image = filename
+        user.save()
+            
+        return user_schema_avatar.dump(user), HTTPStatus.OK
+    
