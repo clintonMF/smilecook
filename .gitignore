@@ -3,3 +3,9 @@ test.py
 test1.py
 config.py
 .env
+
+__pycache__/
+*.py[cod]
+*$py.class
+instance/
+.webassets-cache
