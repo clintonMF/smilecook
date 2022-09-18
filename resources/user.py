@@ -57,7 +57,6 @@ class UserListResource(Resource):
         
         user = User(**data)
         user.save()
-        print(user.email)
         token = generate_token(user.email, salt='activate')
         subject = 'Please confirm your registration'
         link = url_for('useractivateresource',token=token,_external=True)
@@ -142,7 +141,6 @@ class UserActivateResource(Resource):
             }, HTTPStatus.BAD_REQUEST
         
         user = User.get_by_email(email=email)
-        print("user:", user)
         if not user:
             return {"message": "User not found"}, HTTPStatus.NOT_FOUND
         if user.is_active:
@@ -160,7 +158,6 @@ class UserAvatarUploadResource(Resource):
     @jwt_required()
     def put(self):
         file = request.files.get('avatar')
-        print(file)
         
         if not file:
             return {"message": "Not a valid image"}, HTTPStatus.BAD_REQUEST
@@ -171,7 +168,6 @@ class UserAvatarUploadResource(Resource):
         user = User.get_by_id(get_jwt_identity())
         
         if user.avatar_image:
-            print("yes")
             avatar_path = image_set.path(folder='avatars',
                                          filename=user.avatar_image)
             if os.path.exists(avatar_path):
