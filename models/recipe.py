@@ -15,6 +15,7 @@ class Recipe(db.Model):
                            server_default=db.func.now())
     updated_at = db.Column(db.DateTime(), nullable=False, 
                         server_default=db.func.now(), onupdate=db.func.now())
+    cover_image = db.Column(db.String(100), default=None)
     user_id = db.Column(db.Integer(), db.ForeignKey("user.id"))
         
     @classmethod
@@ -27,6 +28,12 @@ class Recipe(db.Model):
     
     @classmethod
     def get_all_by_user(cls, user_id, visibility='public'):
+        
+        """
+        This method is used to filter the recipes a logged in user can see
+        from an author. based on the user and the visibility assigned by the
+        author.
+        """
         if visibility == 'public':
             return cls.query.filter_by(user_id=user_id, is_publish=True)
         elif visibility == 'private':

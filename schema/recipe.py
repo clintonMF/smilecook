@@ -2,6 +2,7 @@ from marshmallow import (
     Schema, fields, validate, validates, ValidationError, post_dump
     )
 from schema.user import UserSchema
+from flask import url_for
 
 # the schema class are used for serialization and deserialization
 
@@ -31,6 +32,7 @@ class RecipeSchema(Schema):
     updated_at = fields.DateTime(dump_only=True)    
     num_of_servings = fields.Method(validate=validate_number_of_servings)
     cook_time = fields.Integer()
+    cover_image = fields.Method(serialize='dump_cover_url')
     
     @validates('cook_time')
     def validate_cook_time(self, value):
@@ -45,8 +47,25 @@ class RecipeSchema(Schema):
     author = fields.Nested(UserSchema, attribute='user',dump_only=True, 
                            only=['id', 'username'])
     
+    def dump_cover_url(self, recipe):
+        if recipe.cover_image:
+            return url_for('static', 
+                filename='images/covers/{}'.format(recipe.cover_image),
+                _external = True)
+        else:
+            return url_for('static', 
+                           filename='images/assets/default-cover.jpg',
+                           _external = True)
+    
+    
+    # The pass_many argument is passed for further serialization
+    # In the case of returning only one recipe, it will be simply returned
+    # in a JSON string. But when we are returning multiple recipes, we will 
+    # store the recipes in a list and return them using the {'data': data} 
+    # format in JSON.
     @post_dump(pass_many=True)
     def wraps(self, data, many, **kwargs):
+        
         if many:
             return {'data': data}
         else:

@@ -7,7 +7,7 @@ from config import Config
 from extensions import db, jwt, image_set
 from models.user import User
 from resources.recipe import RecipeListResource, RecipeResource
-from resources.recipe import RecipePublishResource
+from resources.recipe import RecipePublishResource, RecipeCoverUploadResource
 from resources.user import (
     UserListResource, UserResource, MeResource, UserRecipeListResource,
     UserActivateResource, UserAvatarUploadResource)
@@ -52,6 +52,7 @@ def register_resources(app):
     api.add_resource(UserRecipeListResource, "/users/<string:username>/recipes")
     api.add_resource(UserActivateResource, '/users/activate/<string:token>')
     api.add_resource(UserAvatarUploadResource, '/users/avatar')
+    api.add_resource(RecipeCoverUploadResource, '/recipes/<int:recipe_id>/cover')
 
 
 if __name__=='__main__':
