@@ -1,8 +1,11 @@
+from flask import url_for
+
+
 from marshmallow import (
     Schema, fields, validate, validates, ValidationError, post_dump
     )
 from schema.user import UserSchema
-from flask import url_for
+from schema.pagination import PaginationSchema
 
 # the schema class are used for serialization and deserialization
 
@@ -56,20 +59,6 @@ class RecipeSchema(Schema):
             return url_for('static', 
                            filename='images/assets/default-cover.jpg',
                            _external = True)
-    
-    
-    # The pass_many argument is passed for further serialization
-    # In the case of returning only one recipe, it will be simply returned
-    # in a JSON string. But when we are returning multiple recipes, we will 
-    # store the recipes in a list and return them using the {'data': data} 
-    # format in JSON.
-    @post_dump(pass_many=True)
-    def wraps(self, data, many, **kwargs):
-        
-        if many:
-            return {'data': data}
-        else:
-            return data
         
     
     
