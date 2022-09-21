@@ -9,12 +9,13 @@ from webargs import fields
 from webargs.flaskparser import use_kwargs
 
 from models.recipe import Recipe
-from schema.recipe import RecipeSchema
+from schema.recipe import RecipeSchema, RecipePaginationSchema
 from utils import save_image
 from extensions import image_set
 
 
 recipe_schema = RecipeSchema()
+recipe_pagination_schema = RecipePaginationSchema()
 recipe_list_schema = RecipeSchema(many=True) 
 recipe_cover_schema = RecipeSchema(only=('cover_image',))
 # many = True is used to let the serializer (the @post_dump(pass_many)
@@ -26,12 +27,16 @@ class RecipeListResource(Resource):
     This class holds the logic for the "/recipes" endpoint
     """
     
-    
-    def get(self):
-        recipes = Recipe.get_all_published()
+    @use_kwargs({
+        'page': fields.Int(missing=1),
+        'per_page': fields.Int(missing=10),
+        }, location = "query")
+    def get(self, page, per_page):
         
-        return recipe_list_schema.dump(recipes), HTTPStatus.OK
-    
+        recipes = Recipe.get_all_published(page, per_page)
+        print(page)
+        print(recipe_pagination_schema.dump(recipes))
+        return recipe_pagination_schema.dump(recipes), HTTPStatus.OK
     @jwt_required()
     def post(self):
         json_data = request.get_json()

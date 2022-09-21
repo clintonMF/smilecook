@@ -59,6 +59,12 @@ class RecipeSchema(Schema):
             return url_for('static', 
                            filename='images/assets/default-cover.jpg',
                            _external = True)
+            
+class RecipePaginationSchema(PaginationSchema):
+    # This class inherits all the fields and properties of the PaginationSchema
+    # class
+    data = fields.Nested(RecipeSchema, attribute='items', many=True)
+    
         
     
     

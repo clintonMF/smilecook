@@ -17,14 +17,15 @@ class PaginationSchema(Schema):
     def get_url(page):
             query_args = request.args.to_dict()
             query_args['page'] = page
-            
-            return "()?()".format(request.base_url, urlencode(query_args))
+        
+            return "{}?{}".format(request.base_url, urlencode(query_args))
         
     def get_pagination_links(self, paginated_objects):
         pagination_links = {
             'first': self.get_url(page=1),
             'last': self.get_url(page=paginated_objects.pages)
         }
+        
         
         if paginated_objects.has_next:
             pagination_links['next'] = self.get_url(
@@ -33,6 +34,6 @@ class PaginationSchema(Schema):
             pagination_links['prev'] = self.get_url(
                                             page=paginated_objects.prev_num)
           
-        return paginated_objects
+        return pagination_links
     
     
