@@ -31,9 +31,17 @@ class RecipeListResource(Resource):
         'q': fields.String(missing=''),
         'page': fields.Int(missing=1),
         'per_page': fields.Int(missing=10),
+        'sort': fields.String(missing='created_at'),
+        'order': fields.String(missing='desc')
         }, location = "query")
-    def get(self, q, page, per_page):
-        recipes = Recipe.get_all_published(q, page, per_page)
+    def get(self, q, page, per_page, sort, order):
+        
+        if sort not in ['created_at', 'cook_time', 'num_of_servings']:
+            sort = 'created_at'
+        if order not in ['asc', 'desc']:
+            order = 'desc'
+            
+        recipes = Recipe.get_all_published(q, page, per_page, sort, order)
         # print(recipe_pagination_schema.dump(recipes))
         return recipe_pagination_schema.dump(recipes), HTTPStatus.OK
     
