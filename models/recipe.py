@@ -1,4 +1,4 @@
-from sqlalchemy import asc, desc
+from sqlalchemy import asc, desc, or_
 
 from extensions import db
 
@@ -20,10 +20,12 @@ class Recipe(db.Model):
     user_id = db.Column(db.Integer(), db.ForeignKey("user.id"))
         
     @classmethod
-    def get_all_published(cls, page, per_page):
-        print("get all published")
-        return cls.query.filter_by(is_publish=True).order_by(
-            desc(cls.created_at)).paginate(page=page, per_page=per_page)
+    def get_all_published(cls, q, page, per_page):
+        keyword = "%{}%".format(q)
+        return cls.query.filter(
+            or_(cls.name.ilike(keyword), cls.description.ilike(keyword)),
+            cls.is_publish.is_(True)).order_by(
+                desc(cls.created_at)).paginate(page=page, per_page=per_page)
     
     @classmethod
     def get_by_id(cls, recipe_id):

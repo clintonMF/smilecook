@@ -28,15 +28,15 @@ class RecipeListResource(Resource):
     """
     
     @use_kwargs({
+        'q': fields.String(missing=''),
         'page': fields.Int(missing=1),
         'per_page': fields.Int(missing=10),
         }, location = "query")
-    def get(self, page, per_page):
-        
-        recipes = Recipe.get_all_published(page, per_page)
-        print(page)
-        print(recipe_pagination_schema.dump(recipes))
+    def get(self, q, page, per_page):
+        recipes = Recipe.get_all_published(q, page, per_page)
+        # print(recipe_pagination_schema.dump(recipes))
         return recipe_pagination_schema.dump(recipes), HTTPStatus.OK
+    
     @jwt_required()
     def post(self):
         json_data = request.get_json()
