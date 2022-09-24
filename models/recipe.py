@@ -31,8 +31,8 @@ class Recipe(db.Model):
             
         return cls.query.filter(
             or_(cls.name.ilike(keyword), cls.description.ilike(keyword)),
-            cls.is_publish.is_(True)).order_by(
-                sort_logic).paginate(page=page, per_page=per_page)
+            cls.is_publish.is_(True)).order_by(sort_logic) \
+                .paginate(page=page, per_page=per_page)
     
     @classmethod
     def get_by_id(cls, recipe_id):
@@ -62,15 +62,16 @@ class Recipe(db.Model):
                 .order_by(sort_logic).paginate(page=page, per_page=per_page)
                 
         elif visibility == 'private':
-            return cls.query.filter_by(
-                user_id = user_id, is_publish = False).filter(
-                or_(cls.name.ilike(keyword), cls.description.ilike(keyword))).order_by(
-                sort_logic).paginate(page=page, per_page=per_page)
+            return cls.query.filter(
+                or_(cls.name.ilike(keyword), cls.description.ilike(keyword))) \
+                .filter_by(user_id = user_id, is_publish = False) \
+                .order_by(sort_logic).paginate(page=page, per_page=per_page)
                 
         else:
-            return cls.query.filter_by(user_id = user_id).filter(
-                or_(cls.name.ilike(keyword), cls.description.ilike(keyword))).order_by(
-                sort_logic).paginate(page=page, per_page=per_page)
+            return cls.query.filter(
+                or_(cls.name.ilike(keyword),cls.description.ilike(keyword))) \
+                .filter_by(user_id = user_id) \
+                .order_by(sort_logic).paginate(page=page, per_page=per_page)
             
           
     def save(self):
