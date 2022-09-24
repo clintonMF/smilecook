@@ -39,19 +39,38 @@ class Recipe(db.Model):
         return cls.query.filter_by(id=recipe_id).first()
     
     @classmethod
-    def get_all_by_user(cls, user_id, visibility='public'):
+    def get_all_by_user(cls, q, page, per_page, 
+                        sort, order,user_id, visibility='public'):
         
         """
         This method is used to filter the recipes a logged in user can see
         from an author. based on the user and the visibility assigned by the
         author.
         """
-        if visibility == 'public':
-            return cls.query.filter_by(user_id=user_id, is_publish=True)
-        elif visibility == 'private':
-            return cls.query.filter_by(user_id=user_id, is_publish=False)
+        
+        keyword = "%{}%".format(q)
+        
+        if order == 'desc':
+            sort_logic = desc(getattr(cls, sort))
         else:
-            return cls.query.filter_by(user_id=user_id).all()
+            sort_logic = asc(getattr(cls, sort))
+                    
+        if visibility == 'public':
+            return cls.query.filter(
+                or_(cls.name.ilike(keyword), cls.description.ilike(keyword))) \
+                .filter_by(user_id = user_id, is_publish=True) \
+                .order_by(sort_logic).paginate(page=page, per_page=per_page)
+                
+        elif visibility == 'private':
+            return cls.query.filter_by(
+                user_id = user_id, is_publish = False).filter(
+                or_(cls.name.ilike(keyword), cls.description.ilike(keyword))).order_by(
+                sort_logic).paginate(page=page, per_page=per_page)
+                
+        else:
+            return cls.query.filter_by(user_id = user_id).filter(
+                or_(cls.name.ilike(keyword), cls.description.ilike(keyword))).order_by(
+                sort_logic).paginate(page=page, per_page=per_page)
             
           
     def save(self):

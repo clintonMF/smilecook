@@ -12,7 +12,7 @@ from webargs import fields
 from webargs.flaskparser import use_kwargs
 
 from schema.user import UserSchema
-from schema.recipe import RecipeSchema
+from schema.recipe import RecipeSchema, RecipePaginationSchema
 from models.user import User
 from models.recipe import Recipe
 from mailgun import MailgunApi
@@ -24,6 +24,7 @@ user_schema_public = UserSchema(exclude=('email',))
 user_schema_avatar = UserSchema(only=('avatar_image',))
 # exclude=('email',) is used to prevent the email details from being passed
 recipe_list_schema = RecipeSchema(many=True)
+recipe_pagination_schema = RecipePaginationSchema()
 load_dotenv()
 
 mailgun = MailgunApi(os.getenv("MAILGUN_DOMAIN"),'MAILGUN_API_KEY')
@@ -113,8 +114,15 @@ class UserRecipeListResource(Resource):
     #the @use_kwargs line of code is used to specify that we expect to 
     # receive query parameter visibility. 
     @jwt_required(optional=True)
-    @use_kwargs({'visibility': fields.Str()},  location="query")
-    def get(self, username, visibility):
+    @use_kwargs({
+        'visibility': fields.Str(),
+        'q': fields.String(missing=''),
+        'page': fields.Int(missing=1),
+        'per_page': fields.Int(missing=10),
+        'sort': fields.String(missing='created_at'),
+        'order': fields.String(missing='desc')
+        }, location = "query")
+    def get(self, username, visibility, q, page, per_page, sort, order):
         user = User.get_by_username(username)
         
         if user == None:
@@ -125,9 +133,15 @@ class UserRecipeListResource(Resource):
             pass
         else:
             visibility = 'public'
-        recipe = Recipe.get_all_by_user(user_id=user.id, visibility=visibility)
+            
+        if sort not in ['created_at', 'cook_time', 'num_of_servings']:
+            sort = 'created_at'
+        if order not in ['asc', 'desc']:
+            order = 'desc'
+            
+        recipe = Recipe.get_all_by_user(q, page, per_page, sort, order, user_id=user.id, visibility=visibility)
         
-        return recipe_list_schema.dump(recipe), HTTPStatus.OK
+        return recipe_pagination_schema.dump(recipe), HTTPStatus.OK
     
 class UserActivateResource(Resource):
     """This class is used to activate the user account through the email 
