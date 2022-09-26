@@ -11,7 +11,7 @@ from webargs.flaskparser import use_kwargs
 from models.recipe import Recipe
 from schema.recipe import RecipeSchema, RecipePaginationSchema
 from utils import save_image
-from extensions import image_set
+from extensions import image_set, cache
 
 
 recipe_schema = RecipeSchema()
@@ -34,6 +34,7 @@ class RecipeListResource(Resource):
         'sort': fields.String(missing='created_at'),
         'order': fields.String(missing='desc')
         }, location = "query")
+    @cache.cached(timeout=60, query_string=True)
     def get(self, q, page, per_page, sort, order):
         
         if sort not in ['created_at', 'cook_time', 'num_of_servings']:
