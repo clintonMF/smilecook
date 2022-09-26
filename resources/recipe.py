@@ -10,7 +10,7 @@ from webargs.flaskparser import use_kwargs
 
 from models.recipe import Recipe
 from schema.recipe import RecipeSchema, RecipePaginationSchema
-from utils import save_image
+from utils import save_image, clear_cache
 from extensions import image_set, cache
 
 
@@ -36,7 +36,7 @@ class RecipeListResource(Resource):
         }, location = "query")
     @cache.cached(timeout=60, query_string=True)
     def get(self, q, page, per_page, sort, order):
-        
+        print("querying database....")
         if sort not in ['created_at', 'cook_time', 'num_of_servings']:
             sort = 'created_at'
         if order not in ['asc', 'desc']:
@@ -115,6 +115,7 @@ class RecipeResource(Resource):
         recipe.ingredients = data.get('ingredients') or recipe.ingredients
         
         recipe.save()
+        clear_cache('/recipes')
         return recipe_schema.dump(recipe), HTTPStatus.OK
     
     @jwt_required()
@@ -199,7 +200,7 @@ class RecipeCoverUploadResource(Resource):
         filename = save_image(file, 'covers')
         recipe.cover_image = filename
         recipe.save()
-            
+        clear_cache('/recipes')
         return recipe_cover_schema.dump(recipe), HTTPStatus.OK
     
         
