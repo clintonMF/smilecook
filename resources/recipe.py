@@ -11,7 +11,7 @@ from webargs.flaskparser import use_kwargs
 from models.recipe import Recipe
 from schema.recipe import RecipeSchema, RecipePaginationSchema
 from utils import save_image, clear_cache
-from extensions import image_set, cache
+from extensions import image_set, cache, limiter
 
 
 recipe_schema = RecipeSchema()
@@ -26,6 +26,8 @@ class RecipeListResource(Resource):
     """
     This class holds the logic for the "/recipes" endpoint
     """
+    decorators = [limiter.limit('2 per minute', methods=['GET'],
+                                error_message='Too many requests')]
     
     @use_kwargs({
         'q': fields.String(missing=''),
@@ -36,7 +38,7 @@ class RecipeListResource(Resource):
         }, location = "query")
     @cache.cached(timeout=60, query_string=True)
     def get(self, q, page, per_page, sort, order):
-        print("querying database....")
+        
         if sort not in ['created_at', 'cook_time', 'num_of_servings']:
             sort = 'created_at'
         if order not in ['asc', 'desc']:

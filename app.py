@@ -4,7 +4,7 @@ from flask_restful import Api
 from flask_uploads import configure_uploads, patch_request_class
 
 from config import Config
-from extensions import db, jwt, image_set, cache 
+from extensions import db, jwt, image_set, cache, limiter
 from models.user import User
 from resources.recipe import RecipeListResource, RecipeResource
 from resources.recipe import RecipePublishResource, RecipeCoverUploadResource
@@ -31,6 +31,7 @@ def register_extensions(app):
     patch_request_class(app, 10*1024*1024)
     configure_uploads(app, image_set)
     cache.init_app(app)
+    limiter.init_app(app)
     
     @jwt.token_in_blocklist_loader
     def check_if_token_revoked(jwt_header, jwt_payload: dict) -> bool:
