@@ -36,6 +36,8 @@ class RecipeSchema(Schema):
     num_of_servings = fields.Method(validate=validate_number_of_servings)
     cook_time = fields.Integer()
     cover_image = fields.Method(serialize='dump_cover_url')
+    ingredients = fields.String(required=True,
+                                validate=[validate.Length(max=1000)])
     
     @validates('cook_time')
     def validate_cook_time(self, value):

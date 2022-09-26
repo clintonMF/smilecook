@@ -42,7 +42,7 @@ class RecipeListResource(Resource):
             order = 'desc'
             
         recipes = Recipe.get_all_published(q, page, per_page, sort, order)
-        # print(recipe_pagination_schema.dump(recipes))
+
         return recipe_pagination_schema.dump(recipes), HTTPStatus.OK
     
     @jwt_required()
@@ -87,8 +87,9 @@ class RecipeResource(Resource):
         recipe = Recipe.get_by_id(recipe_id)
         
         try:
-            data = recipe_schema.load(
-                json_data, partial=('name','description', 'directions'))
+            data = recipe_schema.load(json_data, partial=True)
+            # partial = True ensures that the required validation are no longer
+            # required.
         except ValidationError as err:
             return {
                 "messages":"validation error",
@@ -103,11 +104,14 @@ class RecipeResource(Resource):
         if current_user != recipe.user_id:
             return {"message": "Access not allowed"}, HTTPStatus.FORBIDDEN
         
+  
         recipe.name = data.get("name") or recipe.name
         recipe.description = data.get('description') or recipe.description
         recipe.num_of_servings = data.get('num_of_servings') or recipe.num_of_servings
+        # Todo: Make the above line follow pep 8 guidelines.
         recipe.cook_time = data.get('cook_time') or recipe.cook_time
         recipe.directions = data.get('directions') or recipe.directions
+        recipe.ingredients = data.get('ingredients') or recipe.ingredients
         
         recipe.save()
         return recipe_schema.dump(recipe), HTTPStatus.OK

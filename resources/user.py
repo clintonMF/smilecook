@@ -115,7 +115,7 @@ class UserRecipeListResource(Resource):
     # receive query parameter visibility. 
     @jwt_required(optional=True)
     @use_kwargs({
-        'visibility': fields.Str(),
+        'visibility': fields.String(missing='public'),
         'q': fields.String(missing=''),
         'page': fields.Int(missing=1),
         'per_page': fields.Int(missing=10),
